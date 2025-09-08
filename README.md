@@ -1,6 +1,6 @@
 # AML-MultiAgent-RAG
 
-A Multi-Agent RAG platform using Vector DBs and AI agents to answer AML/FT compliance queries with quality validation and consistency checking.
+A Multi-Agent RAG platform using Vector DBs and AI agents to answer AML/CFT compliance queries with quality validation and consistency checking.
 
 <div align="center">
   
@@ -75,14 +75,14 @@ RAG prevents LLM hallucinations and ensures that answers are grounded in factual
 
 ## The AML Use Case
 
-### The Challenge in AML/FT Compliance
+### The Challenge in AML/CFT Compliance
 Financial institutions face a significant challenge in keeping up with regulations related to Anti-Money Laundering and Counter-Financing of Terrorism. These regulations are often complex, vary by jurisdiction (e.g., USA, EU, Brazil), and are spread across numerous lengthy and dense legal documents. Manually searching for specific compliance requirements is slow, error-prone, and requires significant expertise.
 
 ### Our Solution
-This project builds a RAG system to solve this problem. By converting a library of AML/FT regulations from different regions into a searchable vector database, we can create an AI agent that instantly retrieves the exact clauses and requirements needed to answer complex compliance queries, providing accurate, source-backed answers in seconds. This dramatically improves the efficiency and accuracy of compliance officers.
+This project builds a RAG system to solve this problem. By converting a library of AML/CFT regulations from different regions into a searchable vector database, we can create an AI agent that instantly retrieves the exact clauses and requirements needed to answer complex compliance queries, providing accurate, source-backed answers in seconds. This dramatically improves the efficiency and accuracy of compliance officers.
 
 ### Source Documents
-The system built here is trained on a collection of AML/FT regulatory documents from **three major jurisdictions**:
+The system built here is trained on a collection of AML/CFT regulatory documents from **three major jurisdictions**:
 
 #### 🇺🇸 **United States** (English)
 - **USA PATRIOT Act** (`PLAW-107publ56.pdf`) - Public Law 107-56, Uniting and Strengthening America
