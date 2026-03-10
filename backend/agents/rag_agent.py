@@ -11,6 +11,9 @@ from typing import List, Dict, Any
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from backend.core.config.settings import settings
+from backend.services.embeddings.local_embeddings import (
+    deterministic_text_embedding,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,11 +41,17 @@ class AMLRagAgent:
         logger.info("Initializing AML RAG Agent...")
 
         try:
-            # Initialize OpenAI client
-            if not settings.OPENAI_API_KEY:
-                raise ValueError("OPENAI_API_KEY is required")
+            # Initialize OpenAI-compatible client (OpenAI or Groq)
+            if not settings.llm_api_key:
+                raise ValueError(
+                    "Either OPENAI_API_KEY or GROQ_API_KEY is required"
+                )
 
-            self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            client_kwargs = {"api_key": settings.llm_api_key}
+            if settings.resolved_llm_api_base_url:
+                client_kwargs["base_url"] = settings.resolved_llm_api_base_url
+
+            self.openai_client = OpenAI(**client_kwargs)
             logger.info("OpenAI client initialized successfully")
 
             # Initialize Qdrant client
@@ -118,11 +127,28 @@ class AMLRagAgent:
         try:
             # Generate embedding for the question
             logger.debug("Generating embedding for user query...")
-            embedding_response = self.openai_client.embeddings.create(
-                model="text-embedding-3-small",
-                input=question
-            )
-            query_vector = embedding_response.data[0].embedding
+            try:
+                embedding_response = self.openai_client.embeddings.create(
+                    model=settings.embedding_model,
+                    input=question
+                )
+                query_vector = embedding_response.data[0].embedding
+            except Exception as e:
+                error_text = str(e).lower()
+                if (
+                    "model_not_found" in error_text or
+                    "does not exist" in error_text
+                ):
+                    logger.warning(
+                        "Remote embedding model unavailable; using local "
+                        "deterministic embedding for query vector."
+                    )
+                    query_vector = deterministic_text_embedding(
+                        question,
+                        settings.embedding_dimension
+                    )
+                else:
+                    raise
             logger.debug(
                 f"Generated embedding with {len(query_vector)} dimensions"
             )
@@ -227,7 +253,7 @@ class AMLRagAgent:
         try:
             logger.debug(f"Calling OpenAI API with {detected_language} prompt")
             response = self.openai_client.chat.completions.create(
-                model="gpt-4o",
+                model=settings.llm_model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {

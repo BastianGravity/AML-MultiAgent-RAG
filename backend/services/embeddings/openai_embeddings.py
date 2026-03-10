@@ -17,6 +17,9 @@ import time
 from typing import List, Dict, Optional
 import openai
 from backend.core.config.settings import settings
+from backend.services.embeddings.local_embeddings import (
+    deterministic_text_embedding,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,17 +51,23 @@ class OpenAIEmbeddings:
             batch_size (int): Number of documents to process per batch.
                               Default is 100.
         """
-        self.api_key = api_key or settings.OPENAI_API_KEY
+        self.api_key = api_key or settings.llm_api_key
         self.model = model or settings.embedding_model
         self.batch_size = batch_size
+        self.embedding_dimension = settings.embedding_dimension
+        self._use_local_embeddings = False
 
         if not self.api_key:
             raise ValueError(
-                "OpenAI API key must be provided. "
-                "Set OPENAI_API_KEY environment variable."
+                "API key must be provided. "
+                "Set OPENAI_API_KEY or GROQ_API_KEY environment variable."
             )
 
-        self.client = openai.OpenAI(api_key=self.api_key)
+        client_kwargs = {"api_key": self.api_key}
+        if settings.resolved_llm_api_base_url:
+            client_kwargs["base_url"] = settings.resolved_llm_api_base_url
+
+        self.client = openai.OpenAI(**client_kwargs)
 
         logger.info(
             f"OpenAIEmbeddings initialized with model: {self.model}, "
@@ -76,6 +85,16 @@ class OpenAIEmbeddings:
             List of embeddings, each a list of floats
         """
         try:
+            if self._use_local_embeddings:
+                logger.info(
+                    "Using local deterministic embeddings with "
+                    f"dimension {self.embedding_dimension}"
+                )
+                return [
+                    deterministic_text_embedding(text, self.embedding_dimension)
+                    for text in texts
+                ]
+
             logger.info(
                 f"Creating embeddings for {len(texts)} text chunks "
                 f"using model: {self.model}"
@@ -92,6 +111,17 @@ class OpenAIEmbeddings:
             logger.info(f"Successfully created {len(embeddings)} embeddings.")
             return embeddings
         except Exception as e:
+            error_text = str(e).lower()
+            if "model_not_found" in error_text or "does not exist" in error_text:
+                logger.warning(
+                    "Remote embedding model unavailable; switching to local "
+                    "deterministic embeddings for this run."
+                )
+                self._use_local_embeddings = True
+                return [
+                    deterministic_text_embedding(text, self.embedding_dimension)
+                    for text in texts
+                ]
             logger.error(f"Error creating embeddings: {str(e)}")
             raise
 
@@ -201,7 +231,8 @@ if __name__ == "__main__":
         except ValueError as e:
             logger.error(str(e))
             logger.info(
-                "Please set the OPENAI_API_KEY environment variable."
+                "Please set OPENAI_API_KEY or GROQ_API_KEY environment "
+                "variable."
             )
             exit(1)
 

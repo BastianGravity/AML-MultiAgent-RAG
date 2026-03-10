@@ -38,12 +38,15 @@ class ConfidenceAgent:
         """Initialize the Confidence Agent."""
         logger.info("Initializing Confidence Agent...")
 
-        if not settings.OPENAI_API_KEY:
+        if not settings.llm_api_key:
             raise ValueError(
-                "OPENAI_API_KEY is not set. Please configure it in your "
-                "environment."
+                "OPENAI_API_KEY or GROQ_API_KEY is not set. "
+                "Please configure one in your environment."
             )
-        self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        client_kwargs = {"api_key": settings.llm_api_key}
+        if settings.resolved_llm_api_base_url:
+            client_kwargs["base_url"] = settings.resolved_llm_api_base_url
+        self.openai_client = OpenAI(**client_kwargs)
         logger.info("OpenAI client initialized for Confidence Agent")
 
         self.uncertainty_indicators = [
@@ -65,7 +68,7 @@ class ConfidenceAgent:
         """Get evaluation from the LLM."""
         try:
             response = self.openai_client.chat.completions.create(
-                model="gpt-4o",
+                model=settings.llm_model,
                 messages=[
                     {
                         "role": "system",
