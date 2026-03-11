@@ -73,34 +73,34 @@ class AMLRagAgent:
 
     def detect_language(self, question: str) -> str:
         """
-        Detect if the question is in Portuguese or English based on keywords.
+        Detect if the question is in Dutch or English based on keywords.
 
         Args:
             question (str): The user's query
 
         Returns:
-            str: "Portuguese" or "English"
+            str: "Dutch" or "English"
         """
         logger.debug(f"Detecting language for question: {question[:50]}...")
 
-        portuguese_keywords = [
-            "lavagem", "dinheiro", "bcb", "circular", "banco central",
-            "brasil", "clientes", "devido", "controle", "suspeitas",
-            "regulamentação", "compliance", "prevenção", "identificação"
+        dutch_keywords = [
+            "witwassen", "geld", "fraude", "klant", "controle", "risico",
+            "regelgeving", "naleving", "voorkoming", "identificatie", "aantonen",
+            "verstrekking", "compliance", "aml", "cft", "dnb", "afm", "kvk"
         ]
 
         question_lower = question.lower()
-        portuguese_matches = [
-            keyword for keyword in portuguese_keywords
+        dutch_matches = [
+            keyword for keyword in dutch_keywords
             if keyword in question_lower
         ]
 
-        if portuguese_matches:
+        if dutch_matches:
             logger.info(
-                f"Language detected: Portuguese "
-                f"(matched keywords: {portuguese_matches})"
+                f"Language detected: Dutch "
+                f"(matched keywords: {dutch_matches})"
             )
-            return "Portuguese"
+            return "Dutch"
         else:
             logger.info("Language detected: English")
             return "English"
@@ -220,19 +220,15 @@ class AMLRagAgent:
         detected_language = self.detect_language(question)
 
         # Create system prompt based on language
-        if detected_language == "Portuguese":
+        if detected_language == "Dutch":
             system_prompt = (
-                "Você é um especialista em regulamentações AML "
-                "(Anti-Money Laundering) e CFT "
-                "(Counter-Financing of Terrorism). "
-                "Baseando-se estritamente nos documentos fornecidos "
-                "como contexto, "
-                "responda à pergunta de forma precisa e profissional "
-                "em português. "
-                "Se a informação não estiver disponível nos documentos "
-                "fornecidos, "
-                "indique isso claramente. "
-                "Cite sempre as fontes específicas quando possível."
+                "U bent een expert in AML (Anti-Geldwassen) "
+                "en CFT (Bestrijding van Financiering van Terrorisme) regelgeving. "
+                "Beantwoord de vraag nauwkeurig en professioneel in het Nederlands "
+                "op basis van de verstrekte documenten als context. "
+                "Als informatie niet beschikbaar is in de verstrekte documenten, "
+                "geef dit dan duidelijk aan. "
+                "Verwijs altijd naar specifieke bronnen waar mogelijk."
             )
         else:
             system_prompt = (
@@ -299,9 +295,9 @@ class AMLRagAgent:
         except Exception as e:
             logger.error(f"Error generating answer: {e}")
             error_message = (
-                "Desculpe, mas encontrei um erro ao processar "
-                "sua pergunta."
-                if detected_language == "Portuguese"
+                "Het spijt me, maar ik ben een fout tegengekomen bij het verwerken "
+                "van uw vraag."
+                if detected_language == "Dutch"
                 else "I apologize, but I encountered an error while "
                 "processing your request."
             )
@@ -357,9 +353,8 @@ class AMLRagAgent:
                 logger.warning("No relevant documents found for the query")
                 detected_language = self.detect_language(question)
                 no_results_message = (
-                    "Desculpe, não encontrei documentos relevantes "
-                    "para sua pergunta."
-                    if detected_language == "Portuguese"
+                    "Helaas heb ik geen relevante documenten voor uw vraag gevonden."
+                    if detected_language == "Dutch"
                     else "Sorry, I couldn't find relevant documents "
                     "for your question."
                 )

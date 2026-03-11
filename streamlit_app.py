@@ -79,6 +79,54 @@ def query_multi_agent(question, include_detailed=True):
         return False, {"error": str(e)}
 
 
+def process_pdfs():
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/pipeline/process-pdfs",
+            timeout=120
+        )
+        response.raise_for_status()
+        return True, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
+
+
+def chunk_documents():
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/pipeline/chunk-documents",
+            timeout=120
+        )
+        response.raise_for_status()
+        return True, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
+
+
+def generate_embeddings():
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/pipeline/generate-embeddings",
+            timeout=120
+        )
+        response.raise_for_status()
+        return True, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
+
+
+def store_embeddings():
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/pipeline/store-embeddings",
+            timeout=120
+        )
+        response.raise_for_status()
+        return True, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
+
+
 st.title("🏛️ AML Compliance AI Agent")
 st.markdown(
     "*AI Agent for Anti-Money Laundering compliance questions*")
@@ -106,6 +154,49 @@ with st.sidebar:
     else:
         st.warning("🟡 Backend Disconnected")
         st.write("Make sure your backend is running on localhost:8000")
+
+    st.divider()
+
+    st.header("📥 Data Pipeline")
+    st.markdown("*Process and embed your documents*")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("1️⃣ Process PDFs", use_container_width=True):
+            with st.spinner("Processing PDFs..."):
+                success, result = process_pdfs()
+                if success:
+                    st.success(f"✅ Processed {result.get('documents_processed', 0)} documents")
+                else:
+                    st.error(f"❌ Error: {result.get('error', 'Unknown error')}")
+    
+    with col2:
+        if st.button("2️⃣ Chunk Documents", use_container_width=True):
+            with st.spinner("Chunking documents..."):
+                success, result = chunk_documents()
+                if success:
+                    st.success(f"✅ Created {result.get('chunks_created', 0)} chunks")
+                else:
+                    st.error(f"❌ Error: {result.get('error', 'Unknown error')}")
+    
+    col3, col4 = st.columns(2)
+    with col3:
+        if st.button("3️⃣ Generate Embeddings", use_container_width=True):
+            with st.spinner("Generating embeddings (may take a minute)..."):
+                success, result = generate_embeddings()
+                if success:
+                    st.success(f"✅ Generated {result.get('embeddings_created', 0)} embeddings")
+                else:
+                    st.error(f"❌ Error: {result.get('error', 'Unknown error')}")
+    
+    with col4:
+        if st.button("4️⃣ Store in Vector DB", use_container_width=True):
+            with st.spinner("Storing in Qdrant..."):
+                success, result = store_embeddings()
+                if success:
+                    st.success(f"✅ Stored {result.get('embeddings_stored', 0)} embeddings")
+                else:
+                    st.error(f"❌ Error: {result.get('error', 'Unknown error')}")
 
     st.divider()
 

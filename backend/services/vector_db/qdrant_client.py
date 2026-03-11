@@ -39,7 +39,7 @@ class QdrantVectorDB:
     def __init__(
         self, url: Optional[str] = None,
         collection_name: Optional[str] = None,
-        vector_size: int = 1536  # Default OpenAI model embedding size
+        vector_size: int = 768  # Default OpenAI model embedding size
     ):
         """
         Initialize the Qdrant vector database service.

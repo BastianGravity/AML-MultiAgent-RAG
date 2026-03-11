@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from backend.api.routes import query
 from backend.api.routes.multi_agent import multi_agent_router
+from backend.api.routes.pipeline import router as pipeline_router
 
 app = FastAPI(
     title="AML MultiAgent RAG API",
@@ -21,4 +22,10 @@ app.include_router(
 app.include_router(
     multi_agent_router,
     prefix="/api/v1/multi-agent",
+)
+
+# Document processing pipeline
+app.include_router(
+    pipeline_router,
+    prefix="/api/v1/pipeline",
 )
