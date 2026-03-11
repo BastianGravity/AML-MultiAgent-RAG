@@ -33,13 +33,13 @@ class PDFProcessor:
         raw_docs_path (Path): Directory containing raw PDF documents
     """
 
-    def __init__(self, raw_docs_path: str = "docs/raw_docs"):
+    def __init__(self, raw_docs_path: str = "input_docs"):
         """
         Initialize the PDF processor.
 
         Args:
             raw_docs_path (str): Path to directory containing PDF files.
-                                Default is "docs/raw_docs"
+                                Default is "input_docs"
         """
         self.raw_docs_path = Path(raw_docs_path)
 
@@ -156,7 +156,7 @@ class PDFProcessor:
 
     def save_processed_documents(
         self, documents: List[Dict[str, str]],
-        output_path: str = "docs/processed_docs"
+        output_path: str = "input_docs/processed"
     ):
         """
         Save processed documents to JSON file for next pipeline stage.

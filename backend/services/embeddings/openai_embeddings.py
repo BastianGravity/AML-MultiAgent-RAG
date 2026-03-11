@@ -180,7 +180,7 @@ class OpenAIEmbeddings:
 
     def save_embeddings(
         self, embedded_docs: List[Dict],
-        output_path: str = "docs/embeddings/embedded_docs.json"
+        output_path: str = "input_docs/embeddings/embedded_docs.json"
     ) -> str:
         """
         Save embedded documents to a JSON file for vector database storage.
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     logger.info("\nStarting OpenAI embeddings generation...")
 
     # Load chunked documents from previous stage
-    chunked_file = 'docs/processed_docs/chunked_docs.json'
+    chunked_file = 'input_docs/processed/chunked_docs.json'
 
     if os.path.exists(chunked_file):
         logger.info(

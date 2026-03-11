@@ -121,7 +121,7 @@ class TextChunker:
 
     def save_chunks(
         self, chunked_docs: List[Dict[str, str]],
-        output_path: str = "docs/processed_docs/chunked_docs.json"
+        output_path: str = "input_docs/processed/chunked_docs.json"
     ) -> str:
         """
         Save chunked documents to JSON file for next pipeline stage.
@@ -151,7 +151,7 @@ class TextChunker:
 if __name__ == "__main__":
     logger.info("\nStarting text chunking...")
 
-    processed_file = 'docs/processed_docs/processed_docs.json'
+    processed_file = 'input_docs/processed/processed_docs.json'
 
     if os.path.exists(processed_file):
         logger.info(
