@@ -135,19 +135,17 @@ class AMLRagAgent:
                 query_vector = embedding_response.data[0].embedding
             except Exception as e:
                 error_text = str(e).lower()
-                if (
-                    "model_not_found" in error_text or
-                    "does not exist" in error_text
-                ):
+                if any(phrase in error_text for phrase in ["model_not_found", "does not exist", "invalid model", "model=", "model name passed"]):
                     logger.warning(
-                        "Remote embedding model unavailable; using local "
-                        "deterministic embedding for query vector."
+                        f"Remote embedding model '{settings.embedding_model}' unavailable; "
+                        "using local deterministic embedding for query vector."
                     )
                     query_vector = deterministic_text_embedding(
                         question,
                         settings.embedding_dimension
                     )
                 else:
+                    logger.error(f"Embedding error: {e}")
                     raise
             logger.debug(
                 f"Generated embedding with {len(query_vector)} dimensions"

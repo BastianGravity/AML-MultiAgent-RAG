@@ -112,10 +112,10 @@ class OpenAIEmbeddings:
             return embeddings
         except Exception as e:
             error_text = str(e).lower()
-            if "model_not_found" in error_text or "does not exist" in error_text:
+            if any(phrase in error_text for phrase in ["model_not_found", "does not exist", "invalid model", "model=embedding", "model name passed"]):
                 logger.warning(
-                    "Remote embedding model unavailable; switching to local "
-                    "deterministic embeddings for this run."
+                    f"Remote embedding model '{self.model}' unavailable; "
+                    "switching to local deterministic embeddings for this run."
                 )
                 self._use_local_embeddings = True
                 return [

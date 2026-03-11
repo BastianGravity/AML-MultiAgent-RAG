@@ -21,9 +21,13 @@ class Settings(BaseSettings):
     or .env file.
     """
     # API keys
+    LITELLM_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
     GROQ_API_KEY: Optional[str] = None
 
+    # LiteLLM configuration
+    litellm_base_url: Optional[str] = None
+    
     # Optional OpenAI-compatible base URL (e.g. Groq endpoint)
     llm_api_base_url: Optional[str] = None
 
@@ -35,28 +39,32 @@ class Settings(BaseSettings):
     chunk_overlap: int = 200
 
     # LLM models
-    llm_model: str = "llama-3.3-70b-versatile"
-    embedding_model: str = "text-embedding-3-small"
-    embedding_dimension: int = 1536
+    llm_model: str = "gemini-2.5-flash-lite"
+    embedding_model: str = "text-embedding-004"
+    embedding_dimension: int = 768
 
     # Collection names
     collection_name: str = "aml-documents"
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
     @property
     def llm_api_key(self) -> Optional[str]:
-        """Return configured OpenAI key, or fall back to Groq key."""
-        return self.OPENAI_API_KEY or self.GROQ_API_KEY
+        """Return configured LiteLLM key, OpenAI key, or fall back to Groq key."""
+        return self.LITELLM_API_KEY or self.OPENAI_API_KEY or self.GROQ_API_KEY
 
     @property
     def resolved_llm_api_base_url(self) -> Optional[str]:
         """Resolve base URL for OpenAI-compatible clients.
 
-        If no explicit base URL is set and only a Groq key exists,
+        If litellm_base_url is set, use it.
+        If no explicit base URL and only a Groq key exists,
         default to Groq's OpenAI-compatible endpoint.
         """
+        if self.litellm_base_url:
+            return self.litellm_base_url
         if self.llm_api_base_url:
             return self.llm_api_base_url
         if self.GROQ_API_KEY and not self.OPENAI_API_KEY:
